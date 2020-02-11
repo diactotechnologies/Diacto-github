@@ -1,0 +1,84 @@
+#Trimming DOMO
+# Import the domomagic package into the script 
+from domomagic import *
+import pandas as pd
+import re
+# read data from inputs into a data frame
+input1 = read_dataframe('Select Columns')
+#input2 = read_dataframe('Select Columns')
+
+df = pd.DataFrame(input1)
+#print("columns = ",df.columns)
+df.fillna('',inplace = True)
+# write your script here
+strip_value = []
+restore_strip = []
+#strip_values.extend(df['Customer_Exclusion_List1'].tolist())
+strip_value.extend(df['EMEA_Country_List1'].tolist())
+#strip_value.extend(df['String_Endings_strip 1'].tolist())
+#strip_value.extend(df['CommCharNorthAm_strip1'].tolist())
+strip_value.extend(df['CommonCharEMEA_strip1'].tolist())
+
+restore_strip.extend(df['Restrore_Original_for_Values'].tolist())
+
+while(""in strip_value):
+  strip_value.remove("")
+
+  
+while(""in restore_strip):
+  restore_strip.remove("")
+  
+  
+for i in range(len(strip_value)):
+  x = len(strip_value[i])+1
+  strip_value[i]= strip_value[i].rjust(x)
+
+print(strip_value)
+MKTO = read_dataframe('EMEA REGION 1')
+
+df_mkto = pd.DataFrame(MKTO)
+#df_sfdc = pd.DataFrame(SFDC)
+df_mkto.fillna('No Company Name',inplace = True)
+#df_sfdc.fillna('No Company Name',inplace = True)
+
+#L = list(df_mkto['Company Name'].str.lower())
+L = list(df_mkto['Company Name'])
+A = df_mkto['Company Name'].tolist()
+for i in range(len(strip_value)):
+  for j in range(len(L)):
+    L[j] = L[j].replace(strip_value[i],'')
+    #L[j] = re.compile(strip_value[i], re.IGNORECASE)
+    #L[j]=L[j].sub('',L[j])
+    
+      
+###########################################
+#src_str = re.compile("america", re.IGNORECASE)
+#for i in range(len(L)):
+#    str_replaced = src_str.sub("India", L[i])
+#    print(str_replaced)
+
+
+###############################################
+df2 = pd.DataFrame()
+df2['StrippedCompanyName'] = pd.Series(L)
+
+SCN = df2['StrippedCompanyName'].tolist()
+df2.fillna('No Company Name',inplace = True)
+for i in range(len(SCN)):
+  for j in range(len(restore_strip)):
+    if SCN[i] == restore_strip[j]:
+    	SCN[i] = SCN[i].replace(restore_strip[j],A[i])
+
+df1 = pd.DataFrame()        
+df1['StrippedCompanyName'] = pd.Series(SCN)    
+df1['Company Name'] = df_mkto['Company Name']
+df1['Execution Manager Region'] = df_mkto['Execution Manager Region']
+#df1['Account Name'] = df_sfdc['Account Name']
+df1['ID'] = df_mkto['Id']
+df1['MQL_Date'] = df_mkto['MQL Date']
+#df1['StrippedAccountName'] = P
+df1.fillna('No Company Name',inplace = True)
+#print(df1['StrippedCompanyName'].head())
+write_dataframe(df1)
+
+#full actual trimming with company exclusion
