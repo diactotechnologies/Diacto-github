@@ -44,17 +44,21 @@ df_mkto.fillna('No Company Name',inplace = True)
 #L = list(df_mkto['Company Name'].str.lower())
 L = list(df_mkto['Company Name'])
 A = df_mkto['Company Name'].tolist()
-for i in range(len(strip_value)):
-  for j in range(len(L)):
-    L[j] = L[j].replace(strip_value[i],'')
+#####################################################
+#for i in range(len(strip_value)):
+#  for j in range(len(L)):
+#    L[j] = L[j].replace(strip_value[i],'')
     #L[j] = re.compile(strip_value[i], re.IGNORECASE)
     #L[j]=L[j].sub('',L[j])
     
       
 ###########################################
 #src_str = re.compile("america", re.IGNORECASE)
-#for i in range(len(L)):
-#    str_replaced = src_str.sub("India", L[i])
+
+for i in range(len(strip_value)):
+  for j in range(len(L)):
+    if re.findall(strip_value[i],L[j],flags = re.IGNORECASE):
+      L[j] = re.sub(strip_value[i],'',L[j],flags=re.IGNORECASE)
 #    print(str_replaced)
 
 
@@ -64,13 +68,22 @@ df2['StrippedCompanyName'] = pd.Series(L)
 
 SCN = df2['StrippedCompanyName'].tolist()
 df2.fillna('No Company Name',inplace = True)
+##############################################################
 for i in range(len(SCN)):
   for j in range(len(restore_strip)):
     if SCN[i] == restore_strip[j]:
-    	SCN[i] = SCN[i].replace(restore_strip[j],A[i])
-
+    	SCN[i] = re.sub(restore_strip[j],A[i],SCN[i],flags=re.IGNORECASE)
+        #SCN[i] = SCN[i].replace(restore_strip[j],A[i])
+##############################################################
 df1 = pd.DataFrame()        
-df1['StrippedCompanyName'] = pd.Series(SCN)    
+df1['StrippedCompanyName'] = pd.Series(SCN)
+
+################################################################
+for i in range(len(df1['StrippedCompanyName'])):
+  if df1['StrippedCompanyName'][i]=='':
+    df1['StrippedCompanyName'][i] = df1['StrippedCompanyName'][i].replace('',A[i])
+################################################################
+
 df1['Company Name'] = df_mkto['Company Name']
 df1['Execution Manager Region'] = df_mkto['Execution Manager Region']
 #df1['Account Name'] = df_sfdc['Account Name']
