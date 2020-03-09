@@ -1,0 +1,94 @@
+# Import the domomagic package into the script 
+from domomagic import *
+from fuzzywuzzy import fuzz
+import pandas as pd
+
+# read data from inputs into a data frame
+#MKTO = read_dataframe('MKTO-Stripped-Company Names')
+MKTO = read_dataframe('MKTO EMEA')
+#SFDC = read_dataframe('SFDC-Stripped-ACC Names')
+SFDC = read_dataframe('SFDC EMEA')
+
+
+# write your script here
+df_MKTO= pd.DataFrame(MKTO)
+df_SFDC= pd.DataFrame(SFDC)
+#print(df_MKTO.columns)
+#print(df_SFDC.columns)
+New_df= pd.DataFrame()
+New_df['Company Name'] = df_MKTO['Company Name']
+New_df['StrippedCompanyName']= df_MKTO['StrippedCompanyName']
+New_df['Account Name']= df_SFDC['Account Name']
+New_df['StrippedAccountName']= df_SFDC['StrippedAccountName']
+New_df['ID'] = df_MKTO['ID']
+New_df['MQL_Date'] = df_MKTO['MQL_Date']
+New_df['Account Name'] = df_SFDC['Account Name']
+New_df['Opportunity ID'] = df_SFDC['Opportunity ID']
+New_df.fillna('No Company Name',inplace=True)
+#c= list(New_df['StrippedCompanyName'].str.lower())
+#C= list(New_df['StrippedCompanyName'].iloc[:1000])
+C= list(New_df['StrippedCompanyName'])
+#b = set(c)
+#C = list(b)
+O = New_df['Opportunity ID'].tolist()
+I = list(New_df['ID'])
+M = list(New_df['MQL_Date'])
+CN = New_df['Company Name'].tolist()
+#CN = list(New_df['Company Name'])
+#a= list(New_df['StrippedAccountName'].str.lower())
+#A= list(New_df['StrippedAccountName'].iloc[:1000])
+A= list(New_df['StrippedAccountName'])
+AN = New_df['Account Name'].tolist()
+#z = set(a)
+#A = list(z)
+com = []
+ac = []
+scr = []
+id_m = []
+mql = []
+cn = []
+an = []
+o = []
+
+input3 = read_dataframe('Select Columns')
+score_criteria = pd.DataFrame(input3)
+score_criteria.fillna('No Score')
+score = []
+score = score_criteria['Score_Criteria'].tolist()
+while 'No Score' in score:
+  score.remove('No Score')
+
+print('score:',score)  
+SCORE = score[0]  
+#fuzzylogic begins here for comparing trimmed acc. name and company name
+for i in range(len(A)):
+  for j in range(len(C)):
+    if (fuzz.token_sort_ratio(A[i],C[j])>=SCORE):
+        com.append(C[j])
+        ac.append(A[i])
+        scr.append(fuzz.token_sort_ratio(A[i],C[j]))
+        cn.append(CN[j])
+        an.append(AN[i])
+        id_m.append(I[j])
+        mql.append(M[j])
+        o.append(O[i])
+       	 
+        #print(fuzz.token_sort_ratio(C[i],A[j]), " ",C[i]," ", A[j])
+                   
+#print(scr)
+#print(ac)
+#print(com)
+final_df= pd.DataFrame()
+#final_df.reset_index(drop = True)
+#final_df['Account Name'] = New_df['Account Name'].iloc[:90]
+final_df['COM']= pd.Series(com)
+final_df['AC']= pd.Series(ac)
+final_df['SCR']=pd.Series(scr)
+final_df['ID'] = pd.Series(id_m)
+final_df['MQL_Date'] = pd.Series(mql)
+final_df['Company Name'] = pd.Series(cn)          
+final_df['Account Name'] = pd.Series(an)
+final_df['Opportunity ID'] = pd.Series(o)
+final_df.fillna('-',inplace = True)
+# write a data frame so it's available to the next action
+write_dataframe(final_df)
